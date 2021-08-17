@@ -54,14 +54,11 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -p PART [PART ...], --part PART [PART ...]
-                        convert one part for one argument, range for two arguments (part 
-                        is equivalent to page for pdf files, chapters for epub files, 
-                        lines for txt files)
+                        convert one part for one argument, range for two arguments (part is equivalent to page for pdf files, chapters for epub files, lines for txt files)
   -lp LIMITP, --limitp LIMITP, --limitpart LIMITP
                         limit number of parts per audio file
   -o OPTIONS [OPTIONS ...], --options OPTIONS [OPTIONS ...]
-                        advanced options for file text extractors; please refer to 
-                        https://github.com/jsvine/pdfplumber for options regarding pdf files(under extract_text)
+                        advanced options for file text extractors; please refer to https://github.com/jsvine/pdfplumber for options regarding pdf files(under extract_text)
   -d, --debug           shows raw text data from source file
   -t {pytts,gtts}, --tspeech {pytts,gtts}
                         type of audio generator
@@ -85,6 +82,7 @@ For more information and all supported options see https://github.com/jsvine/pdf
 
 ### Release
 Link to release
+
 Requirements:
 - Microsoft Visual C redistributable
 
