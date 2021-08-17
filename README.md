@@ -81,7 +81,7 @@ For more information and all supported options see https://github.com/jsvine/pdf
 
 
 ## Release
-Link to release
+[All releases](https://github.com/Zetaniis/PDF2SpeechCL/releases)
 
 Requirements:
 - Microsoft Visual C redistributable
