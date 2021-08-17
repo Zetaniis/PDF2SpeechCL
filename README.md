@@ -1,7 +1,7 @@
-# PDF2Speech
+# PDF2SpeechCL
 
 ## Desc
-Program generating speech audio files from input files.
+Program generating speech audio files from input files. Command line version
 
 ## Features
 - choose input file anywhere
