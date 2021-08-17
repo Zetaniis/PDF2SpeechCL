@@ -1,9 +1,9 @@
 # PDF2Speech
 
-### Desc
+## Desc
 Program generating speech audio files from input files.
 
-### Features
+## Features
 - choose input file anywhere
 - generate audio file anywhere
 - limit the amount of content extracted
@@ -13,16 +13,16 @@ Program generating speech audio files from input files.
 - modify bitrate of an audio file
 - support for english language only, you can try to run other languages with pytts 
 
-##### Supported input files: 
+#### Supported input files: 
 - PDF
 - EPUB
 - TXT (utf-8 encoding)
 
-##### Available text to speech generators:
+#### Available text to speech generators:
 - Google text to speech - featuring english only with accents
 - Pyttsx3 - featuring voices installed locally on the machine
 
-### Example usage
+## Example usage
 Use _test.pdf_ and generate audio file in the same folder with default arguments. Caution: this command will generate whole file to one audio file. To limit the pages per audio file, use _-lp_
 ```BASH
 PDF2Speech test.pdf
@@ -44,7 +44,7 @@ to
 ```
 python main.py
 ```
-### Arguments breakdown:
+## Arguments breakdown:
 Also shown with --help argument
 ```
 positional arguments:
@@ -71,7 +71,7 @@ optional arguments:
 ```
 
 
-### Additional pdf options:
+## Additional pdf options:
 While extracting data from pdf file, text can lose some readability. If any problems arise while listening to audio file eg. the speaker makes long pauses for every letter spoken or speaks without breaks, use _-d_ (debug) to find out about the state of raw text that is prepared for speech generation. Use _-o_ (option) argument to modify the extraction of text from pdf file so that the text looks readable.
 Current supported options come from pdf extractor, pdfplumber:
 - x_tolerance (default 3)
@@ -80,7 +80,7 @@ Current supported options come from pdf extractor, pdfplumber:
 For more information and all supported options see https://github.com/jsvine/pdfplumber (under extract_text)
 
 
-### Release
+## Release
 Link to release
 
 Requirements:
@@ -89,7 +89,7 @@ Requirements:
 Optional:
 - [ffmpeg](https://www.ffmpeg.org/download.html) - for bitrate modification (be sure to add it to PATH)
 
-### Packages
+## Packages
 Main packages used in this application:
 - [pdfplumber](https://github.com/jsvine/pdfplumber)
 - [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
