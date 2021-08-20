@@ -11,7 +11,7 @@ Program generating speech audio files from input files. Command line version
 - choose audio generator and voice
 - choose audio file format
 - modify bitrate of an audio file
-- support for english language only, you can try to run other languages with pytts 
+- english language supported, partial support for other languages (if file extraction will run successfully eg. extracted text will be readable, appropriate voice generator should work properly)
 
 #### Supported input files: 
 - PDF
@@ -20,7 +20,7 @@ Program generating speech audio files from input files. Command line version
 
 #### Available text to speech generators:
 - Google text to speech - featuring some prepared voices and ability to input any gtts supported lanugages and accents. Please, refer to --help and https://gtts.readthedocs.io/en/latest/module.html#languages-gtts-lang for more information.
-- Pyttsx3 - featuring voices installed locally on the machine. Some Windows 10 voices installed on the machine will not be availabe. In order to make them accesible to the script a software will be provided soon&trade;.
+- Pyttsx3 - featuring voices installed locally on the machine. Some Windows 10 voices installed on the machine will not be availabe. In order to make them accesible to the script, a software will be provided soon&trade;.
 
 ## Example usage
 Use _test.pdf_ and generate audio file in the same folder with default arguments. Caution: this command will generate whole file to one audio file. To limit the pages per audio file, use _-lp_
@@ -48,21 +48,21 @@ python main.py
 Also shown with --help argument
 ```
 positional arguments:
-  source                link to input file
-  destination           target link to audio file (optional, if not inputted program will use source link) 
+  input                 link to input file
+  output                target path link to audio file (optional, if not inputted program will use input file path link)
 
 optional arguments:
   -h, --help            show this help message and exit
   -p PART [PART ...], --part PART [PART ...]
                         convert one part for one argument, range for two arguments (part is equivalent to page for pdf files, chapters for epub files, lines for txt files)
-  -lp LIMITP, --limitp LIMITP, --limitpart LIMITP
+  -lp LIMITP, --limitp LIMITP, --limitpage LIMITP
                         limit number of parts per audio file
   -o OPTIONS [OPTIONS ...], --options OPTIONS [OPTIONS ...]
-                        advanced options for file text extractors; please refer to https://github.com/jsvine/pdfplumber for options regarding pdf files(under extract_text)
-  -d, --debug           shows raw text data from source file
+                        advanced options for file text extractors; please refer to https://github.com/jsvine/pdfplumber for options regarding pdf files (under extract_text)
+  -d, --debug           shows raw text data from input file
   -t {pytts,gtts}, --tspeech {pytts,gtts}
                         type of audio generator
-  -v VOICE, --voice VOICE
+  -v VOICE [VOICE ...], --voice VOICE [VOICE ...]
                         set a voice from the list
   -f {mp3,wav}, --format {mp3,wav}
                         set audio file format
