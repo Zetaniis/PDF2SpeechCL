@@ -55,7 +55,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -p PART [PART ...], --part PART [PART ...]
                         convert one part for one argument, range for two arguments (part is equivalent to page for pdf files, chapters for epub files, lines for txt files)
-  -lp LIMITP, --limitp LIMITP, --limitpage LIMITP
+  -lp LIMITP, --limitp LIMITP, --limitpart LIMITP
                         limit number of parts per audio file
   -o OPTIONS [OPTIONS ...], --options OPTIONS [OPTIONS ...]
                         advanced options for file text extractors; please refer to https://github.com/jsvine/pdfplumber for options regarding pdf files (under extract_text)
