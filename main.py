@@ -9,16 +9,9 @@ import speechOptions as so
 
 from pydub import AudioSegment
 
-# TODO: improve choosing speech type for google text to speech
-# TODO: add more voices from pyttsx3 (sapi5)
-# TODO: decide how to handle stripping newlines from text
 
-
-class main:
-
+class Main:
     def __init__(self):
-        """init"""
-
         """input file variables"""
         self.inputFile = None
 
@@ -28,34 +21,36 @@ class main:
         self.inputFileType = None
 
         """audio file variables"""
-        self.voiceFileLink = None
-        self.voiceFileName = ""
-        self.voiceFileType = None
-        self.voiceFinalLink = None
-        self.voiceBitrate = "96k"
+        self.audioFileLink = None
+        self.audioFileName = ""
+        self.audioFileType = None
+        self.audioFinalLink = None
+        self.audioBitrate = "96k"
 
         """text processing variables"""
-        self.filePage = None
+        # parts are different chunks of text repective to input file; for pdf file part is equivalent to all content
+        # from one page, for epub - one whole chapter, for txt - one line of text
+        self.filePart = None
 
         # self.regex = r'([A-z][^.!?]*[.!?]*"?)'
         # self.match = []
 
-        self.currentPageNum = 0
-        self.pageNumMax = 0
+        self.currentPartNum = 0
+        self.partNumMax = 0
         # self.textListNum = 0
         # self.pageTextList = []
         self.finalText = ""
 
-        self.pagesToConvertCount = None
-        self.startPageNum = None
-        self.endPageNum = None
+        self.partsToConvertCount = None
+        self.startPartNum = None
+        self.endPartNum = None
         # self.startListNum = None
         # self.endListNum = None
 
-        self.pageLimit = 99999999
-        self.charLimit = 99999999
+        self.partLimit = 9999999999999
+        # self.charLimit = 9999999999999
 
-        self.openingInputVariables = [self.inputFile, self.pageNumMax, self.filePage]
+        self.openingInputVariables = [self.inputFile, self.partNumMax, self.filePart]
 
         self.openingMethods = {".pdf": oo.Pdf(*self.openingInputVariables),
                                ".txt": oo.Txt(*self.openingInputVariables),
@@ -73,33 +68,33 @@ class main:
         """parser init"""
         description = "Program generating speech audio files from txt, pdf and epub files. Currently supporting " \
                       "Google Text to Speech (gtts) and local text to speech generators (pytts) "
-        epilog = "Available text to speech generators: \n"
+        epilog = "Available text to speech generators (input only number to choose): \n"
+        # getting all available voices to dictionary - {voice (string):{number (int): object}}
         for k in self.speechMethods:
             self.speechOptions[k], text = self.speechMethods.get(k).getVoices()
             epilog = "".join([epilog, " ", k, "\n", text])
 
         self.parser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
 
-        self.parser.add_argument("source", help="link to input file")
-        self.parser.add_argument("destination", nargs="?", help="target link to audio file (optional, if not inputted "
-                                                                "program will use source link)")
-        # self.parser.add_argument("-vl", "--voicelist", action=self.returnVoiceListAction(self.speechMethods), default=1, help="list all available voices")
+        self.parser.add_argument("input", help="link to input file")
+        self.parser.add_argument("output", nargs="?", help="target path link to audio file (optional, if not inputted "
+                                                                "program will use input file path link)")
         self.parser.add_argument("-p", "--part", nargs="+", help="convert one part for one argument, range for two "
                                                                  "arguments (part is equivalent to page for pdf "
                                                                  "files, chapters for epub files, lines for txt "
                                                                  "files)")
-        self.parser.add_argument("-lp", "--limitp", "--limitpage", help="limit number of parts per audio file")
+        self.parser.add_argument("-lp", "--limitp", "--limitpart", help="limit number of parts per audio file")
         self.parser.add_argument("-o", "--options", nargs="+", help="advanced options for file text extractors; please "
                                                                     "refer to https://github.com/jsvine/pdfplumber for "
                                                                     "options regarding pdf files (under extract_text)")
-        self.parser.add_argument("-d", "--debug", action="store_true", default=False, help="shows raw text data from source file")
+        self.parser.add_argument("-d", "--debug", action="store_true", default=False, help="shows raw text data from input file")
         # self.parser.add_argument("-lc", "-limitc", "-limitchar", "-limitcharacter", nargs=1, help="limit number of characters per audio file")
         self.parser.add_argument("-t", "--tspeech", choices=["pytts", "gtts"], default="pytts", help="type of audio generator")
-        self.parser.add_argument("-v", "--voice", default=0, help="set a voice from the list")
+        self.parser.add_argument("-v", "--voice", nargs="+", default=["0"], help="set a voice from the list")
         # self.parser.add_argument("-c", "-chapters", help="split audio files by chapters (epub only)")
         self.parser.add_argument("-f", "--format", choices=["mp3", "wav"], default="mp3", help="set audio file format")
         self.parser.add_argument("-b", "--bitrate", default="96k", help="set audio file bitrate")
-        
+
         try:
             self.args = self.parser.parse_args()
         except ValueError as a:
@@ -118,94 +113,90 @@ class main:
             exit()
         self.otherArgsInit()
 
-        print("Generating " + str(math.ceil((self.pagesToConvertCount/self.pageLimit))) + " audio files.")
+        print("Generating " + str(math.ceil((self.partsToConvertCount / self.partLimit))) + " audio files.")
 
-        while self.pagesToConvertCount:
+        while self.partsToConvertCount:
             self.finalText = ""
-            for _ in range(self.pageLimit):
-                self.loadPageProcess()
+            # adding text to finalText until part limit for audio file hits
+            for _ in range(self.partLimit):
+                self.loadPartProcess()
                 if self.args.debug:
                     print("--DEBUG--")
-                    print("".join(["--PAGE (CHAPTER): ", str(self.currentPageNum)]))
-                    print("".join(["--CONTENTS--\n", self.filePage]))
-                self.finalText = " ".join([self.finalText, self.filePage])
-                self.currentPageNum += 1
-                self.pagesToConvertCount -= 1
-                if self.pagesToConvertCount < 1:
+                    print("".join(["--PART: ", str(self.currentPartNum)]))
+                    print("".join(["--CONTENTS--\n", self.filePart]))
+                self.finalText = " ".join([self.finalText, self.filePart])
+                self.currentPartNum += 1
+                self.partsToConvertCount -= 1
+                if self.partsToConvertCount < 1:
                     break
             self.finalText = self.finalText.replace('\n', " ")
-            # print(self.finalText)
-            self.voiceFinalLink = self.voiceFileLink + "_" + str(self.currentPageNum) + "." + self.voiceFileType
-            print("Saving audio file to: ", self.voiceFinalLink)
-            # print(self.args.tspeech, self.args.voice, self.speechOptions.get(self.args.tspeech), self.speechOptions.get(self.args.tspeech).get(int(self.args.voice)))
-            self.speechMethod.speechProcessing(self.finalText, self.voiceFinalLink, self.speechOptions.get(self.args.tspeech).get(int(self.args.voice)))
+            self.audioFinalLink = self.audioFileLink + "_" + str(self.currentPartNum) + "." + self.audioFileType
+            print("Saving audio file to: ", self.audioFinalLink)
+            # converting to integer that is used to find a list of language, accent OR passing the string or list directly
+            voiceChoice = [int(self.args.voice[0])] if self.args.voice[0].isdigit() else self.args.voice
+            # audio file creation
+            self.speechMethod.speechProcessing(self.finalText, self.audioFinalLink, self.speechOptions.get(self.args.tspeech).get(voiceChoice[0], voiceChoice))
             self.audioConversion()
-            # self.audioConversion(self.args.format)
 
     def filePathsFormatting(self):
-        """setting path links for source and destination file"""
-        if not self.args.source:
+        """setting path links for input and output file"""
+        if not self.args.input:
             raise Exception("Error: No input file")
         else:
-            self.inputFileLink = self.args.source
+            self.inputFileLink = self.args.input
 
-        print(os.getcwd())
+        # getting absoulte paths to input and output file and setting path oriented variables
         self.inputFileLink = os.path.abspath(self.inputFileLink)
 
         self.inputFileDir = os.path.dirname(self.inputFileLink)
         file = os.path.basename(self.inputFileLink)
         self.inputFileName, self.inputFileType = os.path.splitext(file)
 
-        # print(self.inputFileDir, self.inputFileName, self.inputFileType)
-
-        if self.args.destination:
-            self.voiceFileLink = self.args.destination
+        if self.args.output:
+            self.audioFileLink = self.args.output
         else:
-            self.voiceFileLink = "".join([self.inputFileDir, os.path.sep, self.inputFileName])
+            self.audioFileLink = "".join([self.inputFileDir, os.path.sep, self.inputFileName])
 
-        # print(self.voiceFileLink)
-        self.voiceFileLink = os.path.abspath(self.voiceFileLink)
-        # print(self.voiceFileName)
+        self.audioFileLink = os.path.abspath(self.audioFileLink)
 
     def fileProcessing(self):
         """loading input file"""
         self.openingMethod = self.openingMethods.get(self.inputFileType, oo.Txt(*self.openingInputVariables))
-        self.inputFile, self.pageNumMax = self.openingMethod.loadFileFromLoc(self.inputFileLink)
+        self.inputFile, self.partNumMax = self.openingMethod.loadFileFromLoc(self.inputFileLink)
 
     def otherArgsInit(self):
         """setting other arguments from command line to variables"""
         if not self.args.part:
-            self.startPageNum = 0
-            self.endPageNum = self.pageNumMax
+            self.startPartNum = 0
+            self.endPartNum = self.partNumMax
         elif len(self.args.part) < 2:
-            self.startPageNum = int(self.args.part[0])
-            self.endPageNum = int(self.args.part[0]) + 1
+            self.startPartNum = int(self.args.part[0])
+            self.endPartNum = int(self.args.part[0]) + 1
         else:
-            self.startPageNum = int(self.args.part[0])
-            self.endPageNum = int(self.args.part[1])
+            self.startPartNum = int(self.args.part[0])
+            self.endPartNum = int(self.args.part[1])
 
-        self.startPageNum = max(min(self.startPageNum, self.pageNumMax - 1), 0)
-        self.endPageNum = max(min(self.endPageNum, self.pageNumMax - 1), self.startPageNum + 1)
-        self.currentPageNum = self.startPageNum
-
-        # print(self.startPageNum, self.endPageNum)
+        self.startPartNum = max(min(self.startPartNum, self.partNumMax - 1), 0)
+        self.endPartNum = max(min(self.endPartNum, self.partNumMax - 1), self.startPartNum + 1)
+        self.currentPartNum = self.startPartNum
 
         self.speechMethod = self.speechMethods[self.args.tspeech]
 
-        self.voiceFileType = self.args.format
+        self.audioFileType = self.args.format
 
         if self.args.limitp:
-            self.pageLimit = int(self.args.limitp)
+            self.partLimit = int(self.args.limitp)
 
         # if self.args.limitc:
         #     self.charLimit = int(self.args.limitc[0])
 
-        self.pagesToConvertCount = self.endPageNum - self.startPageNum
+        self.partsToConvertCount = self.endPartNum - self.startPartNum
 
+        # if no partLimit inputted, one chapter per audio file is set
         if not self.args.limitp and self.inputFileType == ".epub":
-            self.pageLimit = 1
+            self.partLimit = 1
 
-        self.voiceBitrate = self.args.bitrate
+        self.audioBitrate = self.args.bitrate
 
         if self.args.options:
             tmp = "".join(self.args.options)
@@ -213,19 +204,19 @@ class main:
                 key, value = options.split("=")
                 self.extractorOptions[key] = int(value)
 
-    def loadPageProcess(self):
+    def loadPartProcess(self):
         """loading part of a file"""
         assert self.inputFile
         assert self.openingMethod
-        self.filePage = self.openingMethod.loadPage(self.currentPageNum, self.extractorOptions)
-        if not self.filePage:
-            self.filePage = ""
+        self.filePart = self.openingMethod.loadPart(self.currentPartNum, self.extractorOptions)
+        if not self.filePart:
+            self.filePart = ""
 
     def audioConversion(self):
         """changing bitrate"""
         try:
-            sound = AudioSegment.from_file(self.voiceFinalLink)
-            sound.export(self.voiceFinalLink,  format=self.voiceFileType, bitrate=self.voiceBitrate)
+            sound = AudioSegment.from_file(self.audioFinalLink)
+            sound.export(self.audioFinalLink, format=self.audioFileType, bitrate=self.audioBitrate)
         except RuntimeError as err:
             if "Couldn't find ffmpeg" in err.__str__():
                 print("Warning: ffmpeg not installed, direct audio manipulation omitted. To resolve this warning, "
@@ -273,4 +264,4 @@ class main:
 
 
 if __name__ == "__main__":
-    session = main()
+    session = Main()

@@ -18,12 +18,11 @@ class Pdf:
         self.pageNumMax = len(self.file)
         return [self.file, self.pageNumMax]
 
-    def loadPage(self, pageNum, options):
+    def loadPart(self, pageNum, options):
         """convert pdf page with pageNum number with additional options"""
         self.filePage = self.file[pageNum].extract_text(**options)
-        # print(self.filePage)
         if self.filePage:
-            self.filePage.replace('\\n', " ")
+            self.filePage.replace('\n', " ")
         return self.filePage
 
 
@@ -67,15 +66,12 @@ class Epub:
                 x.extract()
             # fitering out multiple newlines in text
             tmp.append(re.sub(r'\n\s*\n', '\n\n', soup.getText()))
-        # print(tmp[-1])
         self.file = tmp
         self.pageNumMax = len(self.file)
-        # print(self.pageNumMax)
         return [self.file, self.pageNumMax]
 
-    def loadPage(self, pageNum, options):
+    def loadPart(self, pageNum, options):
         self.filePage = self.file[pageNum]
-        # print(self.filePage)
         return self.filePage
 
 
@@ -91,5 +87,5 @@ class Txt:
         self.pageNumMax = len(self.file)
         return [self.file, self.pageNumMax]
 
-    def loadPage(self, pageNum, options):
+    def loadPart(self, pageNum, options):
         return self.file[pageNum]
