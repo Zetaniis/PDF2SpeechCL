@@ -20,7 +20,7 @@ Program generating speech audio files from input files. Command line version
 
 #### Available text to speech generators:
 - Google text to speech - featuring some prepared voices and ability to input any gtts supported lanugages and accents. Please, refer to --help and https://gtts.readthedocs.io/en/latest/module.html#languages-gtts-lang for more information.
-- Pyttsx3 - featuring voices installed locally on the machine. Some Windows 10 voices installed on the machine will not be availabe. In order to make them accesible to the script, a software will be provided soon&trade;.
+- Pyttsx3 - featuring voices installed locally on the machine. To add more voices, install voice packages using Windows speech options. 
 
 ## Example usage
 Use _test.pdf_ and generate audio file in the same folder with default arguments. Caution: this command will generate whole file to one audio file. To limit the pages per audio file, use _-lp_
