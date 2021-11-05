@@ -4,6 +4,7 @@ dist/
 .idea/
 venv/
 __pychache__/
+output/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
